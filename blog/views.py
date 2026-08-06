@@ -51,45 +51,57 @@ def index(request):
     #     likes_count=Count('likes'),
     #     comments_amount=Count('comments')
     #     ).order_by('-likes_count')
-    popular_posts = Post.objects.prefetch_related('author').annotate(
-        likes_count=Count('likes')
-        ).order_by('-likes_count')
     
-    most_popular_posts = popular_posts[:5]
-    
+    # popular_posts = Post.objects.prefetch_related('author').annotate(
+    #     likes_count=Count('likes')
+    #     ).order_by('-likes_count')
+
+    most_popular_posts = Post.objects.popular()[:5].prefetch_related('author').prefetch_related('tags')
+
     most_popular_posts_ids = [post.id for post in most_popular_posts]
 
-    posts_with_comments = Post.objects.filter(id__in=most_popular_posts_ids).annotate(comments_count=Count('comments'))
+    posts_with_comments = Post.objects.filter(id__in=most_popular_posts_ids).fetch_with_comments_count()
     ids_and_comments = posts_with_comments.values_list('id', 'comments_count')
     count_for_id = dict(ids_and_comments)
-
     for post in most_popular_posts:
         post.comments_count = count_for_id[post.id]
+
+
+   
+
+
+    # posts_with_comments = popular_posts.fetch_with_comments_count()
+    
+
+    # most_popular_posts_ids = [post.id for post in most_popular_posts]
+
+    # posts_with_comments = Post.objects.filter(id__in=most_popular_posts_ids).annotate(comments_count=Count('comments'))
+    # ids_and_comments = posts_with_comments.values_list('id', 'comments_count')
+    # count_for_id = dict(ids_and_comments)
+
+    # for post in most_popular_posts:
+    #     post.comments_count = count_for_id[post.id]
 
     # fresh_posts = Post.objects.prefetch_related('author').annotate(
     #     likes_count=Count('likes'),
     #     comments_amount=Count('comments')
     #     ).order_by('published_at')
-    fresh_posts = Post.objects.prefetch_related('author').annotate(
-        likes_count=Count('likes')
-        ).order_by('-published_at')
+    fresh_posts = Post.objects.fetch_with_comments_count().order_by('-published_at')
 
     most_fresh_posts = fresh_posts[:5]
 
-    most_fresh_posts_ids = [post.id for post in most_fresh_posts]
+    # most_fresh_posts_ids = [post.id for post in most_fresh_posts]
 
-    fresh_posts_with_comments = Post.objects.filter(id__in=most_fresh_posts_ids).annotate(comments_count=Count('comments'))
-    ids_and_comments = fresh_posts_with_comments.values_list('id', 'comments_count')
-    count_for_id = dict(ids_and_comments)
-    for post in most_fresh_posts:
-        post.comments_count = count_for_id[post.id]
+    # fresh_posts_with_comments = Post.objects.filter(id__in=most_fresh_posts_ids).annotate(comments_count=Count('comments'))
+    # ids_and_comments = fresh_posts_with_comments.values_list('id', 'comments_count')
+    # count_for_id = dict(ids_and_comments)
+    # for post in most_fresh_posts:
+    #     post.comments_count = count_for_id[post.id]
 
     tags = Tag.objects.all()
     most_popular_tags = tags.popular()[:5]
 
-    for post in most_popular_posts:
-        print(post.likes_count)
-        print(post.comments_count)
+ 
    
 
     
